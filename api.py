@@ -16,8 +16,8 @@ def power(cmd):
 def active_module(msg):
 	if msg.topic == "stat/sonoff/RESULT":
 		message = eval(msg.payload.decode("utf-8"))
+		global modules
 		for module in message.values():
-			global modules
 			modules.append(module)
 		'''
 		print("\nModules")
@@ -28,8 +28,8 @@ def active_module(msg):
 
 def device_status(msg):
 	if msg.topic == "stat/sonoff/STATUS":
-		global information
 		message = eval(msg.payload.decode("utf-8"))
+		global information
 		for key,value in message.items():
 			information.update({str(key):str(value)})
 		'''
@@ -44,7 +44,6 @@ def	wifi_status(msg):
 	if msg.topic == "stat/sonoff/STATUS3":
 		message = eval(msg.payload.decode("utf-8"))
 		global information
-		message = eval(msg.payload.decode("utf-8"))
 		for key,value in message.items():
 			information.update({str(key):str(value)})
 		'''
@@ -58,7 +57,6 @@ def network_status(msg):
 	if msg.topic == "stat/sonoff/STATUS5":
 		message = eval(msg.payload.decode("utf-8"))
 		global information
-		message = eval(msg.payload.decode("utf-8"))
 		for key,value in message.items():
 			information.update({str(key):str(value)})
 		'''
@@ -76,7 +74,6 @@ def mqtt_status(msg):
 	if msg.topic == "stat/sonoff/STATUS6":
 		message = eval(msg.payload.decode("utf-8"))
 		global information
-		message = eval(msg.payload.decode("utf-8"))
 		for key,value in message.items():
 			information.update({str(key):str(value)})
 		'''
