@@ -1,5 +1,5 @@
 import time
-import get_state as api
+import api
 
 def main():
 	while(1):
