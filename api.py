@@ -30,7 +30,7 @@ def device_status(msg):
 	if msg.topic == "stat/sonoff/STATUS":
 		message = eval(msg.payload.decode("utf-8"))
 		global information
-		for key,value in message.items():
+		for key,value in message['Status'].items():
 			information.update({str(key):str(value)})
 		'''
 		print("\nDevice")
@@ -44,7 +44,7 @@ def	wifi_status(msg):
 	if msg.topic == "stat/sonoff/STATUS3":
 		message = eval(msg.payload.decode("utf-8"))
 		global information
-		for key,value in message.items():
+		for key,value in message['StatusLOG'].items():
 			information.update({str(key):str(value)})
 		'''
 		print("\nWiFi")
@@ -57,7 +57,7 @@ def network_status(msg):
 	if msg.topic == "stat/sonoff/STATUS5":
 		message = eval(msg.payload.decode("utf-8"))
 		global information
-		for key,value in message.items():
+		for key,value in message['StatusNET'].items():
 			information.update({str(key):str(value)})
 		'''
 		print("\nNetwork")
@@ -74,7 +74,7 @@ def mqtt_status(msg):
 	if msg.topic == "stat/sonoff/STATUS6":
 		message = eval(msg.payload.decode("utf-8"))
 		global information
-		for key,value in message.items():
+		for key,value in message['StatusMQT'].items():
 			information.update({str(key):str(value)})
 		'''
 		print("\nMQTT")
@@ -97,6 +97,8 @@ def on_message_module(mqttc, obj, msg):
 	active_module(msg)
 
 def get_information():
+	global information
+	information = dict()
 	publish.single("cmnd/sonoff/STATUS","0", hostname="192.168.43.165")
     #subscribe.callback(on_message,"#",hostname = '192.168.43.165')
 	mqttc = mqtt.Client()
@@ -105,16 +107,21 @@ def get_information():
 	mqttc.subscribe("#", 0)
 	mqttc.loop_start()
 	t.sleep(1)
+	mqttc.loop_stop() #почитать
+
 	return(information)
 
 def get_active_modules():
+	global modules
+	modules.clear()
 	publish.single("cmnd/sonoff/MODULE","0", hostname="192.168.43.165")
 	mqttc = mqtt.Client()
 	mqttc.on_message = on_message_module
 	mqttc.connect("192.168.43.165", 1883, 60)
-	mqttc.subscribe("#", 0)
+	mqttc.subscribe("stat/sonoff/RESULT", 0)
 	mqttc.loop_start()
 	t.sleep(1)
+	mqttc.loop_stop()
 	return(modules)
 
 
