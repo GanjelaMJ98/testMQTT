@@ -2,6 +2,9 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 import paho.mqtt.subscribe as subscribe
 import time as t
+modules = []
+information = dict()
+
 
 
 def power(cmd):
@@ -10,27 +13,55 @@ def power(cmd):
 	else:
 		print("ERROR CMD")
 
- 
+def active_module(msg):
+	if msg.topic == "stat/sonoff/RESULT":
+		message = eval(msg.payload.decode("utf-8"))
+		for module in message.values():
+			global modules
+			modules.append(module)
+		'''
+		print("\nModules")
+		print("Module: "	+ 	str(message['Module']))
+		'''
+		
+
+
 def device_status(msg):
 	if msg.topic == "stat/sonoff/STATUS":
+		global information
 		message = eval(msg.payload.decode("utf-8"))
+		for key,value in message.items():
+			information.update({str(key):str(value)})
+		'''
 		print("\nDevice")
 		print("Module: "	+ 	str(message['Status']['Module']))
 		print("Topic: " 	+ 	str(message['Status']['Topic']))
 		print("Power: " 	+ 	str(message['Status']['Power']))
+		'''
 
 
 def	wifi_status(msg):
 	if msg.topic == "stat/sonoff/STATUS3":
 		message = eval(msg.payload.decode("utf-8"))
+		global information
+		message = eval(msg.payload.decode("utf-8"))
+		for key,value in message.items():
+			information.update({str(key):str(value)})
+		'''
 		print("\nWiFi")
 		print("Wifi: " 		+ 	str(message['StatusLOG']['SSId'][0]))
 		print("Password: " 	+ 	str(message['StatusLOG']['SSId'][1]))
+		'''
 
 
 def network_status(msg):
 	if msg.topic == "stat/sonoff/STATUS5":
 		message = eval(msg.payload.decode("utf-8"))
+		global information
+		message = eval(msg.payload.decode("utf-8"))
+		for key,value in message.items():
+			information.update({str(key):str(value)})
+		'''
 		print("\nNetwork")
 		print("Hostname: " 	+ 	str(message['StatusNET']['Hostname']))
 		print("IP: " 		+ 	str(message['StatusNET']['IPAddress']))
@@ -38,35 +69,56 @@ def network_status(msg):
 		print("Subnetmask: "+ 	str(message['StatusNET']['Subnetmask']))
 		print("DNSServer: " +	str(message['StatusNET']['DNSServer']))
 		print("Mac: " 		+ 	str(message['StatusNET']['Mac']))
+		'''
 
 
 def mqtt_status(msg):
 	if msg.topic == "stat/sonoff/STATUS6":
 		message = eval(msg.payload.decode("utf-8"))
+		global information
+		message = eval(msg.payload.decode("utf-8"))
+		for key,value in message.items():
+			information.update({str(key):str(value)})
+		'''
 		print("\nMQTT")
 		print("MQTT host: " + 	str(message['StatusMQT']['MqttHost']))
 		print("MQTT port: " + 	str(message['StatusMQT']['MqttPort']))
-		
+		'''
+
 
 def print_msg_info(client,userdata,message):
 	print("%s : %s" % (message.topic, message.payload))
 
 
-def on_message(mqttc, obj, msg):
+def on_message_information(mqttc, obj, msg):
     device_status(msg)
     wifi_status(msg)
     network_status(msg)
     mqtt_status(msg)
 
+def on_message_module(mqttc, obj, msg):
+	active_module(msg)
 
 def get_information():
-    publish.single("cmnd/sonoff/STATUS","0", hostname="192.168.43.165")
+	publish.single("cmnd/sonoff/STATUS","0", hostname="192.168.43.165")
     #subscribe.callback(on_message,"#",hostname = '192.168.43.165')
-    mqttc = mqtt.Client()
-    mqttc.on_message = on_message
-    mqttc.connect("192.168.43.165", 1883, 60)
-    mqttc.subscribe("#", 0)
-    mqttc.loop_start()
+	mqttc = mqtt.Client()
+	mqttc.on_message = on_message_information
+	mqttc.connect("192.168.43.165", 1883, 60)
+	mqttc.subscribe("#", 0)
+	mqttc.loop_start()
+	t.sleep(1)
+	return(information)
+
+def get_active_modules():
+	publish.single("cmnd/sonoff/MODULE","0", hostname="192.168.43.165")
+	mqttc = mqtt.Client()
+	mqttc.on_message = on_message_module
+	mqttc.connect("192.168.43.165", 1883, 60)
+	mqttc.subscribe("#", 0)
+	mqttc.loop_start()
+	t.sleep(1)
+	return(modules)
 
 
 
